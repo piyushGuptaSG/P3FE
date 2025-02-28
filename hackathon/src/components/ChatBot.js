@@ -1,16 +1,27 @@
 import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 // Import only the icons we're actually using
 import { FaLink, FaPaperPlane, FaFile } from "react-icons/fa";
 // Remove the unused import
 // import agentService from "../agents/agentService";
 import axios from "axios"; // Add axios for API calls
 
+// Add global styles for dark theme
+const GlobalStyle = createGlobalStyle`
+  body, html, #root {
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+`;
+
 // Define the API endpoint with the full URL as requested
-const API_ENDPOINT = "https://52c3-14-143-227-22.ngrok-free.app/api/read";
+const API_ENDPOINT = "https://e71d-14-143-227-22.ngrok-free.app/api/read";
 // Define the improve API endpoint
 const IMPROVE_API_ENDPOINT =
-  "https://52c3-14-143-227-22.ngrok-free.app/api/improve";
+  "https://e71d-14-143-227-22.ngrok-free.app/api/improve";
 
 // Map analysis types to actions for the new API format
 const analysisTypeToAction = {
@@ -43,17 +54,19 @@ const ChatContainer = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   height: 600px;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
 `;
 
 const ChatHeader = styled.div`
-  background-color: #4a9cff;
+  background-color: #2c3e50;
   color: white;
   padding: 15px;
   font-weight: bold;
@@ -82,8 +95,8 @@ const ToggleContainer = styled.div`
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-color: #f0f4f8;
-  border-bottom: 1px solid #ddd;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #444;
 `;
 
 // Toggle switch styles
@@ -91,7 +104,7 @@ const ToggleSwitch = styled.div`
   position: relative;
   width: 360px;
   height: 34px;
-  background-color: #e4e9f0;
+  background-color: #333;
   border-radius: 17px;
   padding: 2px;
   display: flex;
@@ -106,7 +119,7 @@ const ToggleOption = styled.div`
   z-index: 1;
   font-size: 14px;
   font-weight: ${(props) => (props.isActive ? "bold" : "normal")};
-  color: ${(props) => (props.isActive ? "#fff" : "#555")};
+  color: ${(props) => (props.isActive ? "#fff" : "#aaa")};
   transition: all 0.3s ease;
   cursor: pointer;
 `;
@@ -122,7 +135,7 @@ const ToggleSlider = styled.div`
   }};
   width: 120px;
   height: 30px;
-  background-color: #4a9cff;
+  background-color: #2c3e50;
   border-radius: 15px;
   transition: all 0.3s ease;
   pointer-events: none;
@@ -132,7 +145,7 @@ const ChatMessages = styled.div`
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #f5f5f5;
+  background-color: #222;
   display: flex;
   flex-direction: column;
 
@@ -141,16 +154,16 @@ const ChatMessages = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #333;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #888;
+    background: #555;
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #777;
   }
 `;
 
@@ -170,11 +183,11 @@ const Avatar = styled.div`
   height: 32px;
   border-radius: 50%;
   margin: ${(props) => (props.isUser ? "0 0 0 12px" : "0 12px 0 0")};
-  background-color: ${(props) => (props.isUser ? "#4a9cff" : "#e0e0e0")};
+  background-color: ${(props) => (props.isUser ? "#2c3e50" : "#444")};
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${(props) => (props.isUser ? "white" : "#666")};
+  color: ${(props) => (props.isUser ? "white" : "#ccc")};
   font-size: 14px;
   font-weight: bold;
 `;
@@ -184,13 +197,13 @@ const Message = styled.div`
   border-radius: 18px;
   max-width: 70%;
   word-wrap: break-word;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   position: relative;
 
   ${(props) =>
     props.isUser
       ? `
-    background-color: #4a9cff;
+    background-color: #2c3e50;
     color: white;
     border-bottom-right-radius: 5px;
     
@@ -201,13 +214,13 @@ const Message = styled.div`
       right: -8px;
       width: 16px;
       height: 16px;
-      background-color: #4a9cff;
+      background-color: #2c3e50;
       clip-path: polygon(0 0, 0% 100%, 100% 100%);
     }
   `
       : `
-    background-color: white;
-    color: #333;
+    background-color: #383838;
+    color: #e0e0e0;
     border-bottom-left-radius: 5px;
     
     &::after {
@@ -217,7 +230,7 @@ const Message = styled.div`
       left: -8px;
       width: 16px;
       height: 16px;
-      background-color: white;
+      background-color: #383838;
       clip-path: polygon(100% 0, 0 100%, 100% 100%);
     }
   `}
@@ -227,6 +240,7 @@ const Message = styled.div`
     margin-top: 16px;
     margin-bottom: 8px;
     font-weight: 600;
+    color: #e0e0e0;
   }
 
   h1 {
@@ -261,14 +275,15 @@ const Message = styled.div`
 
   code {
     font-family: monospace;
-    background-color: #f6f8fa;
+    background-color: #2a2a2a;
     padding: 2px 4px;
     border-radius: 3px;
     font-size: 90%;
+    color: #64b5f6;
   }
 
   pre {
-    background-color: #f6f8fa;
+    background-color: #2a2a2a;
     padding: 12px;
     border-radius: 6px;
     overflow-x: auto;
@@ -276,9 +291,9 @@ const Message = styled.div`
   }
 
   blockquote {
-    border-left: 4px solid #dfe2e5;
+    border-left: 4px solid #555;
     padding-left: 16px;
-    color: #6a737d;
+    color: #aaa;
     margin: 10px 0;
   }
 `;
@@ -286,8 +301,8 @@ const Message = styled.div`
 const InputContainer = styled.form`
   display: flex;
   padding: 20px;
-  background-color: white;
-  border-top: 1px solid #ddd;
+  background-color: #2a2a2a;
+  border-top: 1px solid #444;
   flex-direction: column;
   gap: 12px;
 `;
@@ -297,7 +312,7 @@ const UrlInputContainer = styled.div`
   flex-direction: column;
   margin-bottom: 10px;
   padding: 10px;
-  background-color: #f0f4f8;
+  background-color: #333;
   border-radius: 8px;
 `;
 
@@ -310,7 +325,7 @@ const UrlInputHeader = styled.div`
 
 const UrlInputTitle = styled.h4`
   margin: 0;
-  color: #34495e;
+  color: #e0e0e0;
 `;
 
 const UrlInputActions = styled.div`
@@ -322,15 +337,21 @@ const UrlInputActions = styled.div`
 const ChatInput = styled.input`
   flex: 1;
   padding: 12px 18px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #444;
   border-radius: 24px;
   font-size: 16px;
   outline: none;
   transition: all 0.2s ease;
+  background-color: #333;
+  color: #e0e0e0;
 
   &:focus {
-    border-color: #4a9cff;
-    box-shadow: 0 0 0 3px rgba(74, 156, 255, 0.1);
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.2);
+  }
+
+  &::placeholder {
+    color: #888;
   }
 `;
 
@@ -347,8 +368,8 @@ const ButtonGroup = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background-color: #f0f4f8;
-  color: #555;
+  background-color: #333;
+  color: #ccc;
   border: none;
   border-radius: 20px;
   padding: 8px 16px;
@@ -359,7 +380,7 @@ const ActionButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #e4e9f0;
+    background-color: #444;
     transform: translateY(-1px);
   }
 
@@ -373,7 +394,7 @@ const ActionButton = styled.button`
 `;
 
 const SendButton = styled.button`
-  background-color: #4a9cff;
+  background-color: #2c3e50;
   color: white;
   border: none;
   border-radius: 24px;
@@ -386,7 +407,7 @@ const SendButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #3a8cee;
+    background-color: #34495e;
     transform: translateY(-1px);
   }
 
@@ -395,7 +416,7 @@ const SendButton = styled.button`
   }
 
   &:disabled {
-    background-color: #ccc;
+    background-color: #444;
     cursor: not-allowed;
     transform: none;
   }
@@ -411,7 +432,7 @@ const FileUploadOptions = styled.div`
   margin-top: 10px;
   gap: 10px;
   padding: 10px;
-  background-color: #f0f4f8;
+  background-color: #333;
   border-radius: 8px;
 `;
 
@@ -424,17 +445,25 @@ const OptionRow = styled.div`
 const AnalysisTypeSelector = styled.select`
   padding: 8px;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   outline: none;
   font-size: 14px;
   flex: 1;
+  background-color: #333;
+  color: #e0e0e0;
+
+  option {
+    background-color: #333;
+    color: #e0e0e0;
+  }
 `;
 
 const FileUploadInfo = styled.div`
   margin-top: 10px;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: #333;
   border-radius: 8px;
+  color: #e0e0e0;
 `;
 
 const FileUploadActions = styled.div`
@@ -445,7 +474,7 @@ const FileUploadActions = styled.div`
 `;
 
 const UploadButton = styled.button`
-  background-color: #4a9cff;
+  background-color: #2c3e50;
   color: white;
   border: none;
   border-radius: 20px;
@@ -455,13 +484,13 @@ const UploadButton = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #3a8cee;
+    background-color: #34495e;
   }
 `;
 
 const CancelButton = styled.button`
-  background-color: #f0f4f8;
-  color: #555;
+  background-color: #444;
+  color: #e0e0e0;
   border: none;
   border-radius: 20px;
   padding: 8px 15px;
@@ -470,7 +499,7 @@ const CancelButton = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #e4e9f0;
+    background-color: #555;
   }
 `;
 
@@ -482,36 +511,42 @@ const HiddenFileInput = styled.input`
 const WelcomeMessage = styled.div`
   text-align: center;
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: #333;
   border-radius: 8px;
   margin-bottom: 10px;
+  color: #e0e0e0;
 
   h3 {
     margin-top: 0;
     margin-bottom: 10px;
+    color: #e0e0e0;
   }
 
   p {
     margin: 5px 0;
+    color: #ccc;
   }
 `;
 
 const ExtractedTextContainer = styled.div`
   margin-top: 10px;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: #333;
   border-radius: 8px;
   max-height: 200px;
   overflow-y: auto;
   font-size: 12px;
+  color: #e0e0e0;
 
   h4 {
     margin-top: 0;
+    color: #e0e0e0;
   }
 
   pre {
     white-space: pre-wrap;
     word-break: break-word;
+    color: #e0e0e0;
   }
 `;
 
@@ -568,12 +603,12 @@ const LoadingMessageContainer = styled.div`
   align-self: center;
   margin: 20px 0;
   padding: 12px 20px;
-  background-color: #f0f4f8;
+  background-color: #333;
   border-radius: 20px;
   display: flex;
   align-items: center;
   max-width: 80%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 `;
 
 const LoadingIcon = styled.div`
@@ -583,7 +618,7 @@ const LoadingIcon = styled.div`
 
 const LoadingText = styled.div`
   font-size: 16px;
-  color: #4a5568;
+  color: #e0e0e0;
   font-style: italic;
 `;
 
@@ -593,8 +628,8 @@ const LoadingIndicator = styled.div`
   margin: 10px 0;
   width: 40px;
   height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #4a9cff;
+  border: 3px solid #333;
+  border-top: 3px solid #2c3e50;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 
@@ -613,8 +648,8 @@ const LoadingIndicator = styled.div`
 const SpecializedCTAContainer = styled.div`
   display: flex;
   padding: 15px;
-  background-color: #f0f4f8;
-  border-bottom: 1px solid #ddd;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #444;
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
@@ -627,15 +662,15 @@ const AnalysisOptionsContainer = styled.div`
   gap: 10px;
   width: 100%;
   padding: 10px;
-  background-color: #fff;
+  background-color: #333;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 `;
 
 // Update the CTAButton styling
 // eslint-disable-next-line no-unused-vars
 const CTAButton = styled.button`
-  background-color: ${(props) => (props.primary ? "#4a9cff" : "#6c757d")};
+  background-color: ${(props) => (props.primary ? "#2c3e50" : "#444")};
   color: white;
   border: none;
   border-radius: 20px;
@@ -651,9 +686,9 @@ const CTAButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: ${(props) => (props.primary ? "#3a8cee" : "#5a6268")};
+    background-color: ${(props) => (props.primary ? "#34495e" : "#555")};
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
@@ -672,8 +707,8 @@ const LeftSideContainer = styled.div`
   width: 30%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #ddd;
-  background-color: #f5f5f5;
+  border-right: 1px solid #444;
+  background-color: #222;
   overflow-y: auto;
   padding: 15px;
 `;
@@ -1220,255 +1255,258 @@ const ChatBot = () => {
   };
 
   return (
-    <ChatContainer>
-      <ChatHeader>P3 - Peak Productivity Partner</ChatHeader>
+    <>
+      <GlobalStyle />
+      <ChatContainer>
+        <ChatHeader>P3 - Peak Productivity Partner</ChatHeader>
 
-      <ToggleContainer>
-        <ToggleSwitch>
-          <ToggleOption
-            isActive={role === "developer"}
-            onClick={() => toggleRole("developer")}
-          >
-            Developer
-          </ToggleOption>
-          <ToggleOption
-            isActive={role === "pm"}
-            onClick={() => toggleRole("pm")}
-          >
-            Project Manager
-          </ToggleOption>
-          <ToggleOption
-            isActive={role === "qa"}
-            onClick={() => toggleRole("qa")}
-          >
-            QA
-          </ToggleOption>
-          <ToggleSlider role={role} />
-        </ToggleSwitch>
-      </ToggleContainer>
+        <ToggleContainer>
+          <ToggleSwitch>
+            <ToggleOption
+              isActive={role === "developer"}
+              onClick={() => toggleRole("developer")}
+            >
+              Developer
+            </ToggleOption>
+            <ToggleOption
+              isActive={role === "pm"}
+              onClick={() => toggleRole("pm")}
+            >
+              Project Manager
+            </ToggleOption>
+            <ToggleOption
+              isActive={role === "qa"}
+              onClick={() => toggleRole("qa")}
+            >
+              QA
+            </ToggleOption>
+            <ToggleSlider role={role} />
+          </ToggleSwitch>
+        </ToggleContainer>
 
-      <ChatLayoutContainer>
-        {/* Left Side - Controls */}
-        <LeftSideContainer>
-          <AnalysisOptionsContainer>
-            <h4>Analysis Options</h4>
-            <OptionRow>
-              <span>Select Analysis Type:</span>
-              <AnalysisTypeSelector
-                value={analysisType}
-                onChange={(e) => setAnalysisType(e.target.value)}
-              >
-                <option value="">-- Select Analysis Type --</option>
-                {role === "developer" ? (
-                  <>
-                    <option value="lld">Low Level Design</option>
-                    <option value="code_gen">Code Structure</option>
-                    <option value="gaps">Requirement Gaps</option>
-                  </>
-                ) : role === "pm" ? (
-                  <>
-                    <option value="planning">Project Planning</option>
-                    <option value="subtasks">JIRA Tickets</option>
-                    <option value="timeline">Timeline Estimation</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="test_plan">Test Plan</option>
-                    <option value="test_cases">Test Cases</option>
-                    <option value="test_coverage">Test Coverage</option>
-                  </>
-                )}
-              </AnalysisTypeSelector>
-            </OptionRow>
-            {hasAttemptedSubmit && !analysisType && (
-              <div
-                style={{
-                  marginTop: "10px",
-                  color: "#e74c3c",
-                }}
-              >
-                Please select an analysis type ⚠️
-              </div>
-            )}
-          </AnalysisOptionsContainer>
+        <ChatLayoutContainer>
+          {/* Left Side - Controls */}
+          <LeftSideContainer>
+            <AnalysisOptionsContainer>
+              <h4>Analysis Options</h4>
+              <OptionRow>
+                <span>Select Analysis Type:</span>
+                <AnalysisTypeSelector
+                  value={analysisType}
+                  onChange={(e) => setAnalysisType(e.target.value)}
+                >
+                  <option value="">-- Select Analysis Type --</option>
+                  {role === "developer" ? (
+                    <>
+                      <option value="lld">Low Level Design</option>
+                      <option value="code_gen">Code Structure</option>
+                      <option value="gaps">Requirement Gaps</option>
+                    </>
+                  ) : role === "pm" ? (
+                    <>
+                      <option value="planning">Project Planning</option>
+                      <option value="subtasks">JIRA Tickets</option>
+                      <option value="timeline">Timeline Estimation</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="test_plan">Test Plan</option>
+                      <option value="test_cases">Test Cases</option>
+                      <option value="test_coverage">Test Coverage</option>
+                    </>
+                  )}
+                </AnalysisTypeSelector>
+              </OptionRow>
+              {hasAttemptedSubmit && !analysisType && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    color: "#ff6b6b",
+                  }}
+                >
+                  Please select an analysis type ⚠️
+                </div>
+              )}
+            </AnalysisOptionsContainer>
 
-          <ButtonGroup
-            style={{
-              margin: "15px 0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <ActionButton
-              type="button"
-              onClick={toggleUrlInput}
+            <ButtonGroup
               style={{
-                width: "100%",
-                backgroundColor:
-                  analysisSource === "url" ? "#4a9cff" : "#f0f4f8",
-                color: analysisSource === "url" ? "white" : "#555",
+                margin: "15px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
               }}
             >
-              <FaLink /> Analyze Confluence URL
-            </ActionButton>
-            <ActionButton
-              type="button"
-              onClick={handleFileButtonClick}
-              style={{
-                width: "100%",
-                backgroundColor:
-                  analysisSource === "file" ? "#4a9cff" : "#f0f4f8",
-                color: analysisSource === "file" ? "white" : "#555",
-              }}
-            >
-              <FaFile /> Upload & Analyze PDF
-            </ActionButton>
-            {extractedText && (
               <ActionButton
                 type="button"
-                onClick={toggleExtractedText}
-                style={{ width: "100%" }}
-              >
-                {showExtractedText
-                  ? "Hide Extracted Text"
-                  : "Show Extracted Text"}
-              </ActionButton>
-            )}
-          </ButtonGroup>
-
-          {hasAttemptedSubmit &&
-            (!analysisSource ||
-              (analysisSource === "url" && !urlInput) ||
-              (analysisSource === "file" && !selectedFile)) && (
-              <div
+                onClick={toggleUrlInput}
                 style={{
-                  marginTop: "10px",
-                  color: "#e74c3c",
+                  width: "100%",
+                  backgroundColor:
+                    analysisSource === "url" ? "#2c3e50" : "#333",
+                  color: analysisSource === "url" ? "white" : "#ccc",
                 }}
               >
-                {!analysisSource
-                  ? "Please select a source (URL or File) ⚠️"
-                  : analysisSource === "url" && !urlInput
-                  ? "Please enter a URL ⚠️"
-                  : "Please select a file ⚠️"}
-              </div>
-            )}
+                <FaLink /> Analyze Confluence URL
+              </ActionButton>
+              <ActionButton
+                type="button"
+                onClick={handleFileButtonClick}
+                style={{
+                  width: "100%",
+                  backgroundColor:
+                    analysisSource === "file" ? "#2c3e50" : "#333",
+                  color: analysisSource === "file" ? "white" : "#ccc",
+                }}
+              >
+                <FaFile /> Upload & Analyze PDF
+              </ActionButton>
+              {extractedText && (
+                <ActionButton
+                  type="button"
+                  onClick={toggleExtractedText}
+                  style={{ width: "100%" }}
+                >
+                  {showExtractedText
+                    ? "Hide Extracted Text"
+                    : "Show Extracted Text"}
+                </ActionButton>
+              )}
+            </ButtonGroup>
 
-          {showFileUpload && selectedFile && (
-            <FileUploadInfo>
-              <p>Selected file: {selectedFile.name}</p>
-
-              {showPdfOptions && (
-                <FileUploadOptions show={showPdfOptions}>
-                  <h4>Confluence PDF Analysis Options:</h4>
-                  <p>
-                    Using selected analysis type:{" "}
-                    <strong>{analysisType}</strong>
-                  </p>
-                </FileUploadOptions>
+            {hasAttemptedSubmit &&
+              (!analysisSource ||
+                (analysisSource === "url" && !urlInput) ||
+                (analysisSource === "file" && !selectedFile)) && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    color: "#ff6b6b",
+                  }}
+                >
+                  {!analysisSource
+                    ? "Please select a source (URL or File) ⚠️"
+                    : analysisSource === "url" && !urlInput
+                    ? "Please enter a URL ⚠️"
+                    : "Please select a file ⚠️"}
+                </div>
               )}
 
-              <FileUploadActions>
-                <UploadButton type="button" onClick={handleUpload}>
-                  Analyze Document
-                </UploadButton>
-                <CancelButton type="button" onClick={handleCancel}>
-                  Cancel
-                </CancelButton>
-              </FileUploadActions>
-            </FileUploadInfo>
-          )}
+            {showFileUpload && selectedFile && (
+              <FileUploadInfo>
+                <p>Selected file: {selectedFile.name}</p>
 
-          {showUrlInput && (
-            <UrlInputContainer>
-              <UrlInputHeader>
-                <UrlInputTitle>Enter Confluence URL to Analyze</UrlInputTitle>
-              </UrlInputHeader>
+                {showPdfOptions && (
+                  <FileUploadOptions show={showPdfOptions}>
+                    <h4>Confluence PDF Analysis Options:</h4>
+                    <p>
+                      Using selected analysis type:{" "}
+                      <strong>{analysisType}</strong>
+                    </p>
+                  </FileUploadOptions>
+                )}
+
+                <FileUploadActions>
+                  <UploadButton type="button" onClick={handleUpload}>
+                    Analyze Document
+                  </UploadButton>
+                  <CancelButton type="button" onClick={handleCancel}>
+                    Cancel
+                  </CancelButton>
+                </FileUploadActions>
+              </FileUploadInfo>
+            )}
+
+            {showUrlInput && (
+              <UrlInputContainer>
+                <UrlInputHeader>
+                  <UrlInputTitle>Enter Confluence URL to Analyze</UrlInputTitle>
+                </UrlInputHeader>
+                <ChatInput
+                  type="text"
+                  placeholder="Paste your Confluence URL here..."
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                />
+                <UrlInputActions>
+                  <UploadButton type="button" onClick={handleUrlSubmit}>
+                    Analyze Confluence
+                  </UploadButton>
+                  <CancelButton type="button" onClick={toggleUrlInput}>
+                    Cancel
+                  </CancelButton>
+                </UrlInputActions>
+              </UrlInputContainer>
+            )}
+
+            {showExtractedText && extractedText && (
+              <ExtractedTextContainer>
+                <h4>
+                  {analysisSource === "file"
+                    ? "Extracted Text from PDF:"
+                    : "Analysis Results:"}
+                </h4>
+                <pre>{extractedText}</pre>
+              </ExtractedTextContainer>
+            )}
+
+            {/* Hidden file input */}
+            <HiddenFileInput
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="application/pdf"
+            />
+          </LeftSideContainer>
+
+          {/* Right Side - Chat */}
+          <RightSideContainer>
+            <ChatMessages>
+              {messages.map((message, index) => (
+                <MessageWrapper key={index} isUser={message.isUser}>
+                  <Avatar isUser={message.isUser}>
+                    {message.isUser ? "U" : "AI"}
+                  </Avatar>
+                  <Message
+                    isUser={message.isUser}
+                    dangerouslySetInnerHTML={{
+                      __html: formatMessageText(message.text),
+                    }}
+                  />
+                </MessageWrapper>
+              ))}
+              {isLoading && <FunLoadingMessages />}
+              <div ref={messagesEndRef} />
+            </ChatMessages>
+
+            <InputContainer onSubmit={handleSubmit}>
               <ChatInput
                 type="text"
-                placeholder="Paste your Confluence URL here..."
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder={
+                  hasRequiredData()
+                    ? "Type your message..."
+                    : "Select analysis type and source (URL/PDF) first..."
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isLoading}
               />
-              <UrlInputActions>
-                <UploadButton type="button" onClick={handleUrlSubmit}>
-                  Analyze Confluence
-                </UploadButton>
-                <CancelButton type="button" onClick={toggleUrlInput}>
-                  Cancel
-                </CancelButton>
-              </UrlInputActions>
-            </UrlInputContainer>
-          )}
-
-          {showExtractedText && extractedText && (
-            <ExtractedTextContainer>
-              <h4>
-                {analysisSource === "file"
-                  ? "Extracted Text from PDF:"
-                  : "Analysis Results:"}
-              </h4>
-              <pre>{extractedText}</pre>
-            </ExtractedTextContainer>
-          )}
-
-          {/* Hidden file input */}
-          <HiddenFileInput
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="application/pdf"
-          />
-        </LeftSideContainer>
-
-        {/* Right Side - Chat */}
-        <RightSideContainer>
-          <ChatMessages>
-            {messages.map((message, index) => (
-              <MessageWrapper key={index} isUser={message.isUser}>
-                <Avatar isUser={message.isUser}>
-                  {message.isUser ? "U" : "AI"}
-                </Avatar>
-                <Message
-                  isUser={message.isUser}
-                  dangerouslySetInnerHTML={{
-                    __html: formatMessageText(message.text),
-                  }}
-                />
-              </MessageWrapper>
-            ))}
-            {isLoading && <FunLoadingMessages />}
-            <div ref={messagesEndRef} />
-          </ChatMessages>
-
-          <InputContainer onSubmit={handleSubmit}>
-            <ChatInput
-              type="text"
-              placeholder={
-                hasRequiredData()
-                  ? "Type your message..."
-                  : "Select analysis type and source (URL/PDF) first..."
-              }
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isLoading}
-            />
-            <SendButton
-              type="submit"
-              disabled={isLoading || !input.trim() || !hasRequiredData()}
-              title={
-                !hasRequiredData()
-                  ? "Please select an analysis type and provide a URL or file first"
-                  : ""
-              }
-            >
-              Send <FaPaperPlane />
-            </SendButton>
-          </InputContainer>
-        </RightSideContainer>
-      </ChatLayoutContainer>
-    </ChatContainer>
+              <SendButton
+                type="submit"
+                disabled={isLoading || !input.trim() || !hasRequiredData()}
+                title={
+                  !hasRequiredData()
+                    ? "Please select an analysis type and provide a URL or file first"
+                    : ""
+                }
+              >
+                Send <FaPaperPlane />
+              </SendButton>
+            </InputContainer>
+          </RightSideContainer>
+        </ChatLayoutContainer>
+      </ChatContainer>
+    </>
   );
 };
 

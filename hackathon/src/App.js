@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 const AppContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #121212;
   padding: 20px;
 `;
 
@@ -14,12 +14,12 @@ const Header = styled.header`
 `;
 
 const Title = styled.h1`
-  color: #2c3e50;
+  color: #e0e0e0;
   margin-bottom: 10px;
 `;
 
 const Subtitle = styled.h3`
-  color: #34495e;
+  color: #bbb;
   font-weight: normal;
   margin-top: 0;
 `;
@@ -35,7 +35,7 @@ const Main = styled.main`
 const Footer = styled.footer`
   text-align: center;
   margin-top: 30px;
-  color: #7f8c8d;
+  color: #999;
   font-size: 0.9rem;
 `;
 
@@ -51,7 +51,6 @@ function App() {
       <Main>
         <ChatBot />
       </Main>
- 
     </AppContainer>
   );
 }
