@@ -7,7 +7,10 @@ import { FaLink, FaPaperPlane, FaFile } from "react-icons/fa";
 import axios from "axios"; // Add axios for API calls
 
 // Define the API endpoint with the full URL as requested
-const API_ENDPOINT = "https://0bee-14-143-227-22.ngrok-free.app/api/read";
+const API_ENDPOINT = "https://52c3-14-143-227-22.ngrok-free.app/api/read";
+// Define the improve API endpoint
+const IMPROVE_API_ENDPOINT =
+  "https://52c3-14-143-227-22.ngrok-free.app/api/improve";
 
 // Map analysis types to actions for the new API format
 const analysisTypeToAction = {
@@ -929,10 +932,8 @@ const ChatBot = () => {
         },
       ]);
       setIsLoading(false);
-      setUrlInput("");
     } finally {
       setIsLoading(false);
-      setUrlInput("");
     }
   };
 
@@ -1046,21 +1047,98 @@ const ChatBot = () => {
     setIsLoading(true);
 
     try {
-      // Instead of API call, use mock response
-      setTimeout(() => {
-        // Generate mock response based on user input
-        const mockResponse = {
-          response: `This is a mock response to your message: "${input}". You selected ${analysisType} analysis type.`,
-        };
+      // Get the action based on the selected analysis type
+      const action = analysisTypeToAction[analysisType] || "Test Cases";
 
-        // Add AI response
-        const aiMessage = {
-          text: mockResponse.response,
-          isUser: false,
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-        setIsLoading(false);
-      }, 1000);
+      // Create payload with the required format
+      const payload = {
+        role: roleToApiRole[role] || "qa",
+        user_feedback: input,
+        action: action,
+      };
+
+      console.log("Sending request to improve API:", payload);
+
+      // Call the improve API endpoint
+      const response = await axios.post(IMPROVE_API_ENDPOINT, payload);
+      console.log("API response:", response.data);
+      const result = response.data;
+
+      // Structure the API response in a more readable format
+      if (result) {
+        // Add structured content if available
+        if (result.generated_content) {
+          // Set extracted text if available
+          setExtractedText(result.generated_content);
+          setShowExtractedText(true);
+
+          // Format the content similar to the URL analysis
+          let formattedContent = "";
+
+          // Add title if found
+          const titleMatch = result.generated_content.match(/^## (.+?)$/m);
+          if (titleMatch) {
+            formattedContent += `# ${titleMatch[1]}\n\n`;
+          }
+
+          // Process content sections
+          const sections = result.generated_content
+            .split("###")
+            .filter((section) => section.trim());
+
+          if (sections.length > 0) {
+            // Combine sections with proper markdown formatting
+            sections.forEach((section) => {
+              formattedContent += `### ${section.trim()}\n\n`;
+            });
+
+            // Add as a single message
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: formattedContent.trim(),
+                isUser: false,
+              },
+            ]);
+          } else {
+            // If we can't split it into sections, just show the whole content
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: result.generated_content,
+                isUser: false,
+              },
+            ]);
+          }
+        } else if (result.error) {
+          // Handle error
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: result.error,
+              isUser: false,
+            },
+          ]);
+        } else {
+          // Handle empty or unexpected result
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I received a response but couldn't process it. Please try again.",
+              isUser: false,
+            },
+          ]);
+        }
+      } else {
+        // Handle empty result
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: "The analysis returned an empty result. Please try again.",
+            isUser: false,
+          },
+        ]);
+      }
     } catch (error) {
       console.error("Error getting agent response:", error);
       setMessages((prev) => [
@@ -1070,6 +1148,7 @@ const ChatBot = () => {
           isUser: false,
         },
       ]);
+    } finally {
       setIsLoading(false);
     }
   };
